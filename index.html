@@ -1,0 +1,221 @@
+
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>فرماندهی مطالعه مهیار</title>
+<style>
+:root{color-scheme:dark;--bg:#101916;--panel:#1a2822;--panel2:#122019;--line:#3a5044;--ink:#edf3ec;--muted:#a9b9ad;--green:#82b995;--gold:#d8bd79;--red:#df8c80}
+*{box-sizing:border-box}
+body{margin:0;padding:18px;background:var(--bg);color:var(--ink);font-family:Tahoma,Arial,sans-serif}
+.app{max-width:760px;margin:auto}
+.hero{padding:22px;border-radius:19px;background:linear-gradient(135deg,#142b25,#315641);border:1px solid #476b53}
+.hero small,.muted{color:var(--muted)}
+h1{font-size:24px;margin:10px 0}
+.hero p{font-size:12px;line-height:1.9;margin:0;color:#d1dfd3}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:15px;margin-top:14px}
+h2{font-size:16px;margin:0 0 13px}
+label{display:block;font-size:12px;color:var(--muted);margin:0 0 7px}
+input{width:100%;min-width:0;background:#101b16;border:1px solid #52675a;border-radius:9px;padding:11px;color:var(--ink);font:inherit}
+input:focus{outline:2px solid #82b995;outline-offset:1px}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px}
+.stat{background:var(--panel);border:1px solid var(--line);padding:13px;border-radius:13px}
+.num{font-size:23px;font-weight:bold;margin:8px 0;font-variant-numeric:tabular-nums}
+.lesson-row{display:grid;grid-template-columns:minmax(0,1fr) 105px;gap:10px;align-items:end;padding:11px 0;border-bottom:1px solid var(--line)}
+.lesson-row:last-child{border:0}
+.lesson-name{background:#21382c;border:1px solid #66816c;min-height:43px}
+.lesson-hours{text-align:center}
+.bar{height:10px;background:#35473b;border-radius:20px;overflow:hidden;margin:12px 0}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#5f9b72,#a6ca91);transition:width .2s}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.result{background:var(--panel2);border:1px solid #344c3c;padding:12px;border-radius:10px;line-height:2;margin-top:10px;font-size:13px}
+.green{color:var(--green)}.red{color:var(--red)}
+button{font:inherit;font-size:13px;font-weight:bold;border:0;border-radius:10px;padding:12px 15px;background:#477d5c;color:white;cursor:pointer}
+button.secondary{background:#293a31;border:1px solid var(--line);color:var(--ink)}
+button.danger{background:#713d38}
+button:active{transform:scale(.98)}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+.status{font-size:12px;color:var(--green);min-height:19px;margin-top:9px}
+.history{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.day{background:var(--panel2);padding:11px 5px;border-radius:10px;text-align:center;border:1px solid var(--line)}
+.day b{display:block;font-size:18px;margin:8px 0}
+.note{font-size:11px;color:var(--muted);line-height:1.9}
+.footer{text-align:center;color:var(--muted);font-size:11px;margin:20px 0 5px}
+@media(min-width:560px){.stats{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:380px){body{padding:11px}.lesson-row{grid-template-columns:minmax(0,1fr) 88px}.num{font-size:20px}}
+</style>
+</head>
+<body>
+<main class="app">
+<header class="hero">
+ <small>MAHIYAR • PERSONAL STUDY TRACKER</small>
+ <h1>فرماندهی مطالعه 🧭</h1>
+ <p>سه درس اصلی روزت را مشخص کن، ساعت هرکدام را ثبت کن و روند پیشرفتت را ببین.</p>
+ <div style="margin-top:16px;display:flex;justify-content:space-between;gap:10px;align-items:center">
+  <div><small>تاریخ ثبت</small><div id="todayLabel" style="margin-top:6px;font-weight:bold"></div></div>
+  <div style="min-width:145px"><label for="recordDate">انتخاب روز</label><input id="recordDate" type="date"></div>
+ </div>
+</header>
+
+<section class="stats">
+ <div class="stat"><div class="muted">مجموع مطالعه</div><div class="num" id="total">۰</div><div class="muted">ساعت</div></div>
+ <div class="stat"><div class="muted">مطالعه مفید</div><div class="num" id="usefulStat">۰</div><div class="muted">ساعت</div></div>
+ <div class="stat"><div class="muted">هدف روزانه</div><div class="num">۹</div><div class="muted">ساعت</div></div>
+ <div class="stat"><div class="muted">تحقق هدف</div><div class="num" id="percent">۰٪</div><div class="muted">از ۹ ساعت</div></div>
+</section>
+
+<section class="card">
+ <h2>📚 برنامه درسی روزانه</h2>
+ <p class="note">سه کادر اصلی برای نام درس‌ها؛ مقابل هر درس، ساعت مطالعه را وارد کن. هدف هر درس ۳ ساعت است.</p>
+ <div id="lessons">
+  <div class="lesson-row"><div><label for="name0">نام درس اول</label><input class="lesson-name" id="name0" maxlength="45" placeholder="مثلاً زیست‌شناسی"></div><div><label for="hours0">ساعت مطالعه</label><input class="lesson-hours" id="hours0" type="number" min="0" max="24" step=".25" placeholder="۰"></div></div>
+  <div class="lesson-row"><div><label for="name1">نام درس دوم</label><input class="lesson-name" id="name1" maxlength="45" placeholder="مثلاً شیمی"></div><div><label for="hours1">ساعت مطالعه</label><input class="lesson-hours" id="hours1" type="number" min="0" max="24" step=".25" placeholder="۰"></div></div>
+  <div class="lesson-row"><div><label for="name2">نام درس سوم</label><input class="lesson-name" id="name2" maxlength="45" placeholder="مثلاً ریاضی"></div><div><label for="hours2">ساعت مطالعه</label><input class="lesson-hours" id="hours2" type="number" min="0" max="24" step=".25" placeholder="۰"></div></div>
+ </div>
+ <div style="display:flex;justify-content:space-between;gap:8px;margin-top:14px"><b>مجموع ساعات مطالعه</b><b id="totalLabel">۰ / ۹ ساعت</b></div>
+ <div class="bar"><i id="progressBar"></i></div>
+ <div class="note">نوار پیشرفت بر اساس هدف ۹ ساعت محاسبه می‌شود؛ بیشتر از هدف هم قابل ثبت است.</div>
+</section>
+
+<section class="card">
+ <h2>🎯 سطح مطالعه مفید</h2>
+ <div class="grid2">
+  <div><label for="useful">مطالعه مفید (ساعت)</label><input id="useful" type="number" min="0" max="24" step=".25" placeholder="مثلاً ۷"></div>
+  <div><label for="passive">مطالعه غیرفعال (ساعت)</label><input id="passive" type="number" min="0" max="24" step=".25" placeholder="مثلاً ۱"></div>
+ </div>
+ <div class="result" id="quality">پس از وارد کردن اطلاعات، نسبت مطالعه مفید نمایش داده می‌شود.</div>
+ <p class="note">مطالعه مفید یعنی زمانی که واقعاً درگیر یادگیری، حل تمرین یا مرور فعال بوده‌ای.</p>
+</section>
+
+<section class="card">
+ <h2>📈 مقایسه با روز گذشته</h2>
+ <div class="grid2">
+  <div><label for="compareToday">مطالعه امروز (ساعت)</label><input id="compareToday" type="number" min="0" step=".25" placeholder="خودکار از مجموع بالا"></div>
+  <div><label for="compareYesterday">مطالعه دیروز (ساعت)</label><input id="compareYesterday" type="number" min="0" step=".25" placeholder="از تاریخچه یا دستی"></div>
+ </div>
+ <div class="result" id="comparison">مقایسه پس از ثبت یا وارد کردن ساعات نمایش داده می‌شود.</div>
+ <p class="note">فرمول تغییر: (مطالعه امروز ÷ مطالعه دیروز − ۱) × ۱۰۰</p>
+</section>
+
+<section class="card">
+ <h2>🗓️ سه روز اخیر</h2>
+ <div class="history" id="history"></div>
+</section>
+
+<div class="actions">
+ <button id="saveBtn" type="button">ذخیره روز ✓</button>
+ <button id="loadBtn" class="secondary" type="button">بارگذاری روز</button>
+ <button id="clearBtn" class="danger" type="button">پاک کردن فرم</button>
+</div>
+<div id="status" class="status" role="status" aria-live="polite"></div>
+<div class="footer">DISCIPLINE IS BUILT ONE DAY AT A TIME • MAHIYAR</div>
+</main>
+
+<script>
+(function(){
+'use strict';
+const KEY='mahiyar-study-command-v3';
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,'0');
+const isoToday=()=>{const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
+const fa=n=>Number(n||0).toLocaleString('fa-IR',{maximumFractionDigits:2});
+const faDate=s=>{if(!s)return '—';const d=new Date(s+'T12:00:00');return new Intl.DateTimeFormat('fa-IR',{year:'numeric',month:'short',day:'numeric'}).format(d)};
+let records={};
+try{records=JSON.parse(localStorage.getItem(KEY)||'{}');if(!records||typeof records!=='object')records={}}catch(e){records={}}
+let selectedDate=isoToday();
+$('recordDate').value=selectedDate;
+$('todayLabel').textContent=faDate(isoToday());
+
+function num(id){const v=Number($(id).value);return Number.isFinite(v)&&v>0?v:0}
+function total(){return num('hours0')+num('hours1')+num('hours2')}
+function snapshot(){
+ return {
+  lessons:[0,1,2].map(i=>({name:$('name'+i).value,hours:num('hours'+i)})),
+  useful:num('useful'),passive:num('passive'),
+  compareYesterday:$('compareYesterday').value
+ };
+}
+function persist(){
+ try{localStorage.setItem(KEY,JSON.stringify(records));return true}
+ catch(e){setStatus('ذخیره‌سازی مرورگر ناموفق بود؛ فضای ذخیره‌سازی را بررسی کن.',true);return false}
+}
+function setStatus(msg,error){
+ $('status').textContent=msg;
+ $('status').style.color=error?'#df8c80':'#82b995';
+}
+function render(){
+ const t=total(),u=num('useful');
+ $('total').textContent=fa(t);
+ $('usefulStat').textContent=fa(u);
+ $('percent').textContent=fa(t/9*100)+'٪';
+ $('totalLabel').textContent=fa(t)+' / ۹ ساعت';
+ $('progressBar').style.width=Math.min(100,t/9*100)+'%';
+ $('quality').innerHTML='<b>نسبت مطالعه مفید به کل:</b> '+fa(t?u/t*100:0)+'٪<br><b>مطالعه غیرفعال:</b> '+fa(num('passive'))+' ساعت';
+ $('compareToday').value=String(t);
+ const yesterday=new Date(selectedDate+'T12:00:00');yesterday.setDate(yesterday.getDate()-1);
+ const ykey=yesterday.getFullYear()+'-'+pad(yesterday.getMonth()+1)+'-'+pad(yesterday.getDate());
+ const savedY=records[ykey];
+ const ytotal=savedY?savedY.lessons.reduce((s,x)=>s+(Number(x.hours)||0),0):null;
+ if($('compareYesterday').value===''&&ytotal!==null)$('compareYesterday').value=String(ytotal);
+ const b=$('compareYesterday').value;
+ if(b!==''&&Number(b)>0){
+  const change=(t/Number(b)-1)*100;
+  $('comparison').innerHTML='<b>تغییر نسبت به دیروز:</b> <span class="'+(change>=0?'green':'red')+'">'+(change>0?'+':'')+fa(change)+'٪</span><br><b>نسبت امروز به دیروز:</b> '+fa(t/Number(b))+' برابر';
+ }else if(b!==''&&Number(b)===0){
+  $('comparison').textContent='مطالعه دیروز صفر بوده؛ درصد تغییر قابل محاسبه نیست.';
+ }else{
+  $('comparison').textContent='برای مقایسه، مطالعه دیروز را وارد کن یا ابتدا روز قبل را ثبت کن.';
+ }
+}
+function fill(data){
+ data=data||{lessons:[{name:'',hours:''},{name:'',hours:''},{name:'',hours:''}],useful:'',passive:'',compareYesterday:''};
+ for(let i=0;i<3;i++){
+  const lesson=data.lessons&&data.lessons[i]?data.lessons[i]:{};
+  $('name'+i).value=lesson.name||'';
+  $('hours'+i).value=lesson.hours||'';
+ }
+ $('useful').value=data.useful||'';
+ $('passive').value=data.passive||'';
+ $('compareYesterday').value=data.compareYesterday??'';
+ render();
+}
+function renderHistory(){
+ const dates=Object.keys(records).filter(k=>/^\d{4}-\d{2}-\d{2}$/.test(k)).sort().filter(k=>k<=selectedDate).slice(-3).reverse();
+ $('history').innerHTML=[0,1,2].map(i=>{
+  const key=dates[i],r=key?records[key]:null;
+  const sum=r?r.lessons.reduce((s,x)=>s+(Number(x.hours)||0),0):0;
+  return '<div class="day"><span class="muted">'+(key?faDate(key):'ثبت نشده')+'</span><b>'+(key?fa(sum):'—')+'</b><span class="muted">ساعت مطالعه</span></div>';
+ }).join('');
+}
+function save(){
+ records[selectedDate]=snapshot();
+ if(persist()){renderHistory();setStatus('اطلاعات این روز با موفقیت ذخیره شد ✓');}
+}
+function clearForm(){
+ if(!confirm('فرم این روز پاک شود؟ اطلاعات ذخیره‌شده قبلی حذف نمی‌شود مگر اینکه دوباره «ذخیره روز» را بزنی.'))return;
+ fill(null);setStatus('فرم پاک شد. برای جایگزین کردن اطلاعات ذخیره‌شده، «ذخیره روز» را بزن.');
+}
+$('saveBtn').addEventListener('click',save);
+$('loadBtn').addEventListener('click',()=>{
+ fill(records[selectedDate]||null);
+ setStatus(records[selectedDate]?'اطلاعات ذخیره‌شده بارگذاری شد.':'برای این تاریخ هنوز اطلاعاتی ذخیره نشده است.');
+});
+$('clearBtn').addEventListener('click',clearForm);
+$('recordDate').addEventListener('change',()=>{
+ const d=$('recordDate').value;
+ if(!d)return;
+ selectedDate=d;
+ $('todayLabel').textContent=faDate(isoToday())+' • روز انتخابی: '+faDate(d);
+ fill(records[selectedDate]||null);renderHistory();
+ setStatus(records[selectedDate]?'اطلاعات این روز بارگذاری شد.':'روز جدید؛ اطلاعاتش را وارد کن.');
+});
+document.querySelectorAll('#lessons input,input#useful,input#passive,input#compareYesterday').forEach(el=>{
+ el.addEventListener('input',render);
+});
+fill(records[selectedDate]||null);
+renderHistory();
+})();
+</script>
+</body>
+</html>
